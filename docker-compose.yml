@@ -1,0 +1,55 @@
+version: '3'
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: web_fastapi
+    volumes:
+      - ./app:/app
+    env_file:
+      - ./app/.env
+    ports:
+      - "80:80"
+    environment:
+      MONGO_INITDB_DATABASE: ${MONGO_INITDB_DATABASE}
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_INITDB_ROOT_USERNAME}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD}
+      MONGODB_DB: ${MONGODB_DB}
+      MONGODB_USER: ${MONGODB_USER}
+      MONGODB_PASSWORD: ${MONGODB_PASSWORD}
+    depends_on:
+      - db
+    networks:
+      - fastapi-network
+
+  db:
+    image: mongo
+    container_name: db_fastapi
+    restart: unless-stopped
+    env_file:
+      - ./app/.env
+    environment:
+      MONGO_INITDB_DATABASE: ${MONGO_INITDB_DATABASE}
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_INITDB_ROOT_USERNAME}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD}
+      MONGODB_DB: ${MONGODB_DB}
+      MONGODB_USER: ${MONGODB_USER}
+      MONGODB_PASSWORD: ${MONGODB_PASSWORD}
+    ports:
+      - "27017:27017"
+    volumes:
+      - db-data:/data/db
+      - ./app/.env
+    networks:
+      - fastapi-network
+
+#Docker Networks
+networks:
+  fastapi-network:
+    driver: bridge
+
+#Volumes
+volumes:
+  db-data:
+    driver: local
